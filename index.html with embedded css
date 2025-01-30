@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Attendance Management</title>
+  <title>Samsthiti</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -14,6 +14,7 @@
     }
     h1 {
       color: #3284f7;
+      font-family: Copperplate, Papyrus, fantasy;
     }
     ul {
       list-style: none;
@@ -70,7 +71,7 @@
   </style>
 </head>
 <body>
-  <h1>Attendance Management</h1>
+  <h1>SAMSTHITI</h1>
   
   <h2>Students</h2>
   <ul>
