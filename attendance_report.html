@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance Report</title>
+  <style>
+    /* Table Styling */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid black;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    .sort-link {
+      text-decoration: none;
+      padding: 5px;
+      color: #007bff;
+    }
+
+    .sort-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h1>Attendance Report</h1>
+
+  <!-- Sorting Links (optional) -->
+  <div>
+    <a href="{{ url_for('attendance_report') }}" class="sort-link">
+      Sort by Name (A-Z)
+    </a>
+  </div>
+
+  {% for student_name, attendance_records in grouped_report.items() %}
+    <h2>{{ student_name }}</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for date, status in attendance_records %}
+          <tr>
+            <td>{{ date }}</td>
+            <td>{{ status }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <br>
+  {% endfor %}
+
+  <br>
+  <a href="{{ url_for('index') }}">Back to Student List</a>
+</body>
+</html>
