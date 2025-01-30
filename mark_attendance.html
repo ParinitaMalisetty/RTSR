@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mark Attendance</title>
+</head>
+<body>
+  <h1>Mark Attendance</h1>
+  <form action="{{ url_for('mark_attendance', student_id=student_id) }}" method="post">
+    <label for="date">Date: </label>
+    <input type="date" id="date" name="date" required><br><br>
+    
+    <label for="status">Status: </label>
+    <select id="status" name="status" required>
+      <option value="Present">Present</option>
+      <option value="Absent">Absent</option>
+    </select><br><br>
+    
+    <button type="submit">Submit</button>
+  </form>
+  
+  <a href="{{ url_for('index') }}">Back to Student List</a>
+</body>
+</html>
