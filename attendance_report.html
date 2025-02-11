@@ -68,24 +68,16 @@
       color: white;
     }
 
-    /* Sorting Dropdown Styling */
-    .sort-dropdown {
-      display: inline-block;
-      margin-bottom: 20px;
-      text-align: left;
-    }
-
+    /* Sorting Dropdown */
     select {
       padding: 10px;
-      font-size: 16px;
       border-radius: 5px;
-      border: 1px solid #ccc;
-      cursor: pointer;
+      font-size: 16px;
     }
 
     /* Back to Student List Link Container */
     .back-to-list-container {
-      text-align: center; /* Center the link */
+      text-align: center;
       margin-top: 30px;
     }
 
@@ -105,39 +97,23 @@
       background-color: #218838;
     }
 
-    /* Responsive Design */
-    @media (max-width: 768px) {
-      table {
-        width: 100%;
-        font-size: 14px;
-      }
-
-      th, td {
-        padding: 8px;
-      }
-
-      .sort-dropdown, a {
-        font-size: 14px;
-        padding: 8px 12px;
-      }
-    }
   </style>
 </head>
 <body>
   <h1>Attendance Report</h1>
 
   <!-- Sorting Dropdown -->
-  <div class="sort-dropdown">
-    <label for="sort">Sort by:</label>
-    <select id="sort" name="sort" onchange="location = this.value;">
-      <option value="{{ url_for('attendance_report', sort_by='name_asc') }}">Name (A-Z)</option>
-      <option value="{{ url_for('attendance_report', sort_by='name_desc') }}">Name (Z-A)</option>
-      <option value="{{ url_for('attendance_report', sort_by='date_asc') }}">Date (Oldest to Newest)</option>
-      <option value="{{ url_for('attendance_report', sort_by='date_desc') }}">Date (Newest to Oldest)</option>
-      <option value="{{ url_for('attendance_report', sort_by='present') }}">Present</option>
-      <option value="{{ url_for('attendance_report', sort_by='absent') }}">Absent</option>
+  <form method="get" action="{{ url_for('attendance_report') }}">
+    <label for="sort_by">Sort by: </label>
+    <select name="sort_by" id="sort_by" onchange="this.form.submit()">
+      <option value="name_asc" {% if request.args.get('sort_by') == 'name_asc' %}selected{% endif %}>Name (A-Z)</option>
+      <option value="name_desc" {% if request.args.get('sort_by') == 'name_desc' %}selected{% endif %}>Name (Z-A)</option>
+      <option value="date_asc" {% if request.args.get('sort_by') == 'date_asc' %}selected{% endif %}>Date (Asc)</option>
+      <option value="date_desc" {% if request.args.get('sort_by') == 'date_desc' %}selected{% endif %}>Date (Desc)</option>
+      <option value="present" {% if request.args.get('sort_by') == 'present' %}selected{% endif %}>Present First</option>
+      <option value="absent" {% if request.args.get('sort_by') == 'absent' %}selected{% endif %}>Absent First</option>
     </select>
-  </div>
+  </form>
 
   {% for student_name, attendance_records in grouped_report.items() %}
     <h2>{{ student_name }}</h2>
