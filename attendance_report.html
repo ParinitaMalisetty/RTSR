@@ -37,14 +37,14 @@
     }
 
     th, td {
-      border: 1px solid #ddd;
+      border: 1px solid #000000;
       padding: 10px;
       text-align: center;
     }
 
     th {
-      background-color: #4c8db6;
-      color: white;
+      background-color: #d1e5f6;
+      color: rgb(0, 0, 0);
       font-weight: bold;
     }
 
@@ -57,21 +57,30 @@
       cursor: pointer;
     }
 
-    /* Sorting Link as Button */
-    .sort-link {
-      display: inline-block;
-      background-color: #4e73df;
+    /* Background Colors for Status */
+    .present {
+      background-color: #28a745; /* Green for Present */
       color: white;
-      padding: 10px 15px;
-      border-radius: 5px;
-      text-decoration: none;
-      margin: 20px 0;
-      text-align: center;
     }
 
-    .sort-link:hover {
-      background-color: #2e59d9;
-      box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    .absent {
+      background-color: #dc3545; /* Red for Absent */
+      color: white;
+    }
+
+    /* Sorting Dropdown Styling */
+    .sort-dropdown {
+      display: inline-block;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    select {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      cursor: pointer;
     }
 
     /* Back to Student List Link Container */
@@ -107,7 +116,7 @@
         padding: 8px;
       }
 
-      .sort-link, a {
+      .sort-dropdown, a {
         font-size: 14px;
         padding: 8px 12px;
       }
@@ -117,11 +126,17 @@
 <body>
   <h1>Attendance Report</h1>
 
-  <!-- Sorting Links (optional) -->
-  <div>
-    <a href="{{ url_for('attendance_report') }}" class="sort-link">
-      Sort by Name (A-Z)
-    </a>
+  <!-- Sorting Dropdown -->
+  <div class="sort-dropdown">
+    <label for="sort">Sort by:</label>
+    <select id="sort" name="sort" onchange="location = this.value;">
+      <option value="{{ url_for('attendance_report', sort_by='name_asc') }}">Name (A-Z)</option>
+      <option value="{{ url_for('attendance_report', sort_by='name_desc') }}">Name (Z-A)</option>
+      <option value="{{ url_for('attendance_report', sort_by='date_asc') }}">Date (Oldest to Newest)</option>
+      <option value="{{ url_for('attendance_report', sort_by='date_desc') }}">Date (Newest to Oldest)</option>
+      <option value="{{ url_for('attendance_report', sort_by='present') }}">Present</option>
+      <option value="{{ url_for('attendance_report', sort_by='absent') }}">Absent</option>
+    </select>
   </div>
 
   {% for student_name, attendance_records in grouped_report.items() %}
@@ -137,7 +152,7 @@
         {% for date, status in attendance_records %}
           <tr>
             <td>{{ date }}</td>
-            <td>{{ status }}</td>
+            <td class="{% if status == 'Present' %}present{% else %}absent{% endif %}">{{ status }}</td>
           </tr>
         {% endfor %}
       </tbody>
