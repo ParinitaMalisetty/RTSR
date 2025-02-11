@@ -49,9 +49,9 @@ The **Use Case Diagram** shows the functionality of the system from the perspect
           ^ |                                        
           | | Add Student                         
           | v                                     
-      +-------------+                              
+      +--------------+                              
       | Admin/Teacher|                             
-      +-------------+                              
+      +--------------+                              
 ```
 
 ### 2. **Class Diagram**
@@ -74,16 +74,16 @@ The **Class Diagram** shows the structure of the system, including the classes, 
 **Class Diagram:**
 
 ```
-+----------------+     +-----------------+     +------------------+
-|    Student     |     |   Attendance    |     | AttendanceReport |
-+----------------+     +-----------------+     +------------------+
-| - id           |     | - student_id    |     | - report_data    |
-| - name         |     | - date          |     |                  |
-+----------------+     | - status        |     |                  |
-| + add_student()|     +-----------------+     | + generate_report()|
++----------------+     +-------------------+   +--------------------+
+|    Student     |     |   Attendance      |   | AttendanceReport   |
++----------------+     +-------------------+   +--------------------+
+| - id           |     | - student_id      |   | - report_data      |
+| - name         |     | - date            |   |                    |
++----------------+     | - status          |   |                    |
+| + add_student()|     +-------------------+   | + generate_report()|
 | + get_info()   |     |+ mark_attendance()|   | + group_by_name()  |
-+----------------+     |  generate_report()|   +-------------------+
-                        +-----------------+ 
++----------------+     |  generate_report()|   +--------------------+
+                       +-------------------+ 
 ```
 
 ### 3. **Activity Diagram**
@@ -133,7 +133,7 @@ The **Sequence Diagram** shows how objects interact with each other in a specifi
 ```
   Teacher          System (Attendance Management System)
     |                           |
-    |     request_report()       |
+    |     request_report()      |
     |-------------------------->|
     |                           |   
     |   fetch_attendance_data() |
@@ -152,6 +152,58 @@ The **Sequence Diagram** shows how objects interact with each other in a specifi
     |-------------------------->|
     |                           |
 ```
+5. Architecture Overview
+The architecture for the Attendance Management System will include the following components:
+
+Frontend (User Interface):
+
+Admin/Teacher Interface: A dashboard where teachers can manage attendance, view and generate reports, and add students.
+Student Interface: A simple interface for students to view their own attendance.
+Backend (Server):
+
+Student Management: Handles adding, deleting, and modifying student information.
+Attendance Management: Responsible for recording and managing attendance data.
+Report Generation: Handles the creation of attendance reports, including sorting and grouping by name and date.
+Error Handling: Catches and manages any system errors, such as missing attendance data or invalid inputs.
+Database:
+
+Student Database: Stores student details (ID, name, email).
+Attendance Database: Stores attendance records (student ID, date, status).
+Report Database: Stores historical reports and their associated data.
+pgsql
+Copy
+Edit
++---------------------------------------------------------------+
+|                       Frontend (UI)                           |
+|                                                               |
+|   +---------------------+       +-------------------------+   |
+|   | Admin/Teacher UI    |       | Student Interface       |   |
+|   +---------------------+       +-------------------------+   |
++---------------------------------------------------------------+
+            |                                |
+            v                                v
++--------------------------------------------------------------+
+|                       Backend (Server)                       |
+|                                                              |
+|   +----------------------+   +----------------------------+  |
+|   | Student Management   |   | Attendance Management      |  |
+|   +----------------------+   +----------------------------+  |
+|            |                     |                           |
+|            v                     v                           |
+|   +------------------+    +---------------------+            |
+|   | Report Generation|    | Error Handling      |            |
+|   +------------------+    +---------------------+            |
++--------------------------------------------------------------+
+            |
+            v
++--------------------------+
+|       Database           |
+|--------------------------|
+| Student Database         |
+| Attendance Database      |
+| Report Database          |
++--------------------------+
+System Architecture: Provided an overview of how the components (frontend, backend, and database) interact, with additional focus on the error-handling mechanism.
 
 ---
 
