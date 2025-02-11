@@ -18,25 +18,6 @@ def init_db():
                     FOREIGN KEY(student_id) REFERENCES students(id))''')
     conn.commit()
     conn.close()
-#login
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))  # If already logged in, redirect to home
-    
-    form = LoginForm()
-    if form.validate_on_submit():
-        email = form.email.data
-        password = form.password.data
-        user = User.query.filter_by(email=email).first()
-        
-        if user and check_password_hash(user.password, password):
-            login_user(user)  # Log the user in
-            return redirect(url_for('index'))  # Redirect to the home page
-        
-        flash('Login Unsuccessful. Please check your username and password', 'danger')
-
-    return render_template('login.html', form=form)
 
 # Route to display all students
 @app.route('/')
@@ -77,20 +58,20 @@ def mark_attendance(student_id):
 # Route to view attendance report
 @app.route('/attendance_report')
 def attendance_report():
+    sort_by = request.args.get('sort_by', 'name_asc')
+
     conn = sqlite3.connect('attendance.db')
     c = conn.cursor()
 
-    # Query to fetch attendance data, sorted by student name and attendance date
+    # Query to fetch attendance data
     c.execute("""
         SELECT students.name, attendance.date, attendance.status
         FROM attendance
         JOIN students ON attendance.student_id = students.id
-        ORDER BY students.name ASC, attendance.date ASC  -- Sorting by student name and date
     """)
-
     report = c.fetchall()
     conn.close()
-    
+
     # Organize the data into a dictionary grouped by student name
     grouped_report = {}
     for row in report:
@@ -99,8 +80,25 @@ def attendance_report():
             grouped_report[name] = []
         grouped_report[name].append((date, status))
 
-    return render_template('attendance_report.html', grouped_report=grouped_report)
+    # Sort the grouped report based on the selected sort_by parameter
+    if sort_by == 'name_asc':
+        grouped_report_sorted = {k: v for k, v in sorted(grouped_report.items())}
+    elif sort_by == 'name_desc':
+        grouped_report_sorted = {k: v for k, v in sorted(grouped_report.items(), reverse=True)}
+    elif sort_by == 'date_asc':
+        grouped_report_sorted = {k: sorted(v, key=lambda x: x[0]) for k, v in grouped_report.items()}
+    elif sort_by == 'date_desc':
+        grouped_report_sorted = {k: sorted(v, key=lambda x: x[0], reverse=True) for k, v in grouped_report.items()}
+    elif sort_by == 'present':
+        # Sorting by 'Present' first (Present = 1, Absent = 0)
+        grouped_report_sorted = {k: sorted(v, key=lambda x: (x[1] != 'Present', x[0])) for k, v in grouped_report.items()}
+    elif sort_by == 'absent':
+        # Sorting by 'Absent' first (Absent = 1, Present = 0)
+        grouped_report_sorted = {k: sorted(v, key=lambda x: (x[1] != 'Absent', x[0])) for k, v in grouped_report.items()}
+    else:
+        grouped_report_sorted = grouped_report  # Default sort
 
+    return render_template('attendance_report.html', grouped_report=grouped_report_sorted)
 
 if __name__ == '__main__':
     init_db()
