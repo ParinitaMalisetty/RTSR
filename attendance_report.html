@@ -5,21 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Attendance Report</title>
   <style>
-    /* Table Styling */
-    table {
-      width: 100%;
-      border-collapse: collapse;
+    /* General Styling */
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f7fc;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      color: #3284f7;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+
+    h2 {
+      font-size: 1.2em;
+      color: #192f86;
       margin-top: 20px;
     }
 
+    /* Table Styling */
+    table {
+      width: 100%;
+      margin: 0 auto 20px auto;
+      border-collapse: collapse;
+      background-color: white;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
     th, td {
-      border: 1px solid black;
-      padding: 8px;
-      text-align: left;
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
     }
 
     th {
-      background-color: #f2f2f2;
+      background-color: #4c8db6;
+      color: white;
       font-weight: bold;
     }
 
@@ -29,16 +54,63 @@
 
     tr:hover {
       background-color: #f1f1f1;
+      cursor: pointer;
     }
 
+    /* Sorting Link as Button */
     .sort-link {
+      display: inline-block;
+      background-color: #4e73df;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 5px;
       text-decoration: none;
-      padding: 5px;
-      color: #007bff;
+      margin: 20px 0;
+      text-align: center;
     }
 
     .sort-link:hover {
-      text-decoration: underline;
+      background-color: #2e59d9;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Back to Student List Link Container */
+    .back-to-list-container {
+      text-align: center; /* Center the link */
+      margin-top: 30px;
+    }
+
+    /* Back to Student List Link Styling */
+    a {
+      text-decoration: none;
+      background-color: #ba6418;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 5px;
+      display: inline-block;
+      font-size: 16px;
+      text-align: center;
+    }
+
+    a:hover {
+      background-color: #218838;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      table {
+        width: 100%;
+        font-size: 14px;
+      }
+
+      th, td {
+        padding: 8px;
+      }
+
+      .sort-link, a {
+        font-size: 14px;
+        padding: 8px 12px;
+      }
     }
   </style>
 </head>
@@ -70,10 +142,12 @@
         {% endfor %}
       </tbody>
     </table>
-    <br>
   {% endfor %}
 
-  <br>
-  <a href="{{ url_for('index') }}">Back to Student List</a>
+  <!-- Back to Student List Link -->
+  <div class="back-to-list-container">
+    <a href="{{ url_for('index') }}">Back to Student List</a>
+  </div>
+
 </body>
 </html>
