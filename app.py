@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 import sqlite3
 
 app = Flask(__name__)
+app.secret_key = 'your_secret_key_here'  # Secret key for session management
 
 # Initialize the SQLite database
 def init_db():
@@ -16,12 +17,45 @@ def init_db():
                     date TEXT,
                     status TEXT,
                     FOREIGN KEY(student_id) REFERENCES students(id))''')
+    c.execute('''CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT NOT NULL,
+                    password TEXT NOT NULL)''')  # Make sure this line exists
     conn.commit()
     conn.close()
+
+# Route to display the login page
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        # Print out the values being checked
+        print(f"Attempting to log in with username: {username} and password: {password}")
+
+        # Check the credentials (for simplicity, let's assume the first user in the users table is admin)
+        conn = sqlite3.connect('attendance.db')
+        c = conn.cursor()
+        c.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
+        user = c.fetchone()
+        conn.close()
+
+        if user:
+            session['user_id'] = user[0]  # Store user_id in the session
+            return redirect(url_for('index'))
+        else:
+            return "Invalid credentials, please try again."
+
+    return render_template('login.html')
+
 
 # Route to display all students
 @app.route('/')
 def index():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
     conn = sqlite3.connect('attendance.db')
     c = conn.cursor()
     c.execute("SELECT * FROM students")
@@ -32,6 +66,9 @@ def index():
 # Route to add a student (for admin)
 @app.route('/add_student', methods=['POST'])
 def add_student():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
     name = request.form['name']
     conn = sqlite3.connect('attendance.db')
     c = conn.cursor()
@@ -43,6 +80,9 @@ def add_student():
 # Route to mark attendance
 @app.route('/mark_attendance/<int:student_id>', methods=['GET', 'POST'])
 def mark_attendance(student_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
     if request.method == 'POST':
         status = request.form['status']
         date = request.form['date']
@@ -58,6 +98,9 @@ def mark_attendance(student_id):
 # Route to view attendance report
 @app.route('/attendance_report')
 def attendance_report():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
     sort_by = request.args.get('sort_by', 'name_asc')
 
     conn = sqlite3.connect('attendance.db')
@@ -100,6 +143,13 @@ def attendance_report():
 
     return render_template('attendance_report.html', grouped_report=grouped_report_sorted)
 
+# Route to log out
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)  # Remove user_id from session
+    return redirect(url_for('login'))
+
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
+
