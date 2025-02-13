@@ -68,9 +68,28 @@
     button:hover {
       background: #0056b3;
     }
+
+    /* Logout button positioning */
+    .logout-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: #dc3545;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 5px;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+    .logout-btn:hover {
+      background-color: #c82333;
+    }
   </style>
 </head>
 <body>
+  <!-- Logout Button -->
+  <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+
   <h1>UPASTHITI</h1>
   
   <h2>Students</h2>
