@@ -1,0 +1,85 @@
+What is a Service Worker?
+A Service Worker is a script that your browser runs in the background, separate from your web pages. It enables features like caching and offline access.
+
+Steps to Implement Offline Mode
+1. Create a Service Worker File
+Add a JavaScript file, such as service-worker.js, in the static folder of your Flask project:
+
+javascript
+// service-worker.js
+
+const CACHE_NAME = 'attendance-cache-v1';
+const urlsToCache = [
+    '/',
+    '/static/css/style.css',
+    '/static/js/main.js',
+    '/static/images/logo.png',
+    '/login',
+    '/attendance_report'
+];
+
+// Install the Service Worker and cache resources
+self.addEventListener('install', (event) => {
+    event.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => {
+            console.log('Opened cache');
+            return cache.addAll(urlsToCache);
+        })
+    );
+});
+
+// Intercept network requests and serve cached files
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        caches.match(event.request).then((response) => {
+            return response || fetch(event.request);
+        })
+    );
+});
+
+// Update the Service Worker and remove old caches
+self.addEventListener('activate', (event) => {
+    const cacheWhitelist = [CACHE_NAME];
+    event.waitUntil(
+        caches.keys().then((cacheNames) => {
+            return Promise.all(
+                cacheNames.map((cacheName) => {
+                    if (!cacheWhitelist.includes(cacheName)) {
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        })
+    );
+});
+2. Register the Service Worker
+In your base HTML template (e.g., base.html), include this script to register the service worker:
+
+html
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/static/service-worker.js')
+            .then((registration) => {
+                console.log('Service Worker registered with scope:', registration.scope);
+            })
+            .catch((error) => {
+                console.log('Service Worker registration failed:', error);
+            });
+    }
+</script>
+3. Update Flask Routes for Offline Access
+Decide which routes and static files should be available offline. You already define paths like / and /attendance_report—add their URLs to the urlsToCache array in the Service Worker file.
+
+4. Testing Offline Mode
+Run your Flask app locally using flask run.
+
+Open your app in a browser.
+
+Disable your network connection to test offline features.
+
+Ensure that the specified routes and static files load without an internet connection.
+
+5. Future Enhancements
+Dynamic Content: Use IndexedDB (a browser database) to store data like student lists and attendance records, enabling offline access to dynamic content.
+
+Push Notifications: Combine Service Workers with push notifications to alert users about updates when they come back online.
