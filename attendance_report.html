@@ -32,13 +32,14 @@
 
     .search-container {
       text-align: center;
-      margin-bottom: 10px;
+      margin-bottom: 20px;
     }
 
-    .search-container input {
+    input[type="text"] {
+      width: 40%;
       padding: 8px;
-      font-size: 16px;
-      width: 200px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
     }
 
     h2 {
@@ -84,6 +85,7 @@
 
     .present { background-color: #28a745; color: white; }
     .absent { background-color: #dc3545; color: white; }
+    .sick { background-color: #ffcc00; color: black; }
 
     .back-to-list-container {
       text-align: center;
@@ -106,37 +108,35 @@
   <div class="upasthiti-title">UPASTHITI</div>
   <h1>Attendance Report</h1>
 
-  <!-- Search Bar -->
   <div class="search-container">
-    <input type="text" id="searchInput" placeholder="Search student..." onkeyup="searchStudents()">
+    <input type="text" id="searchInput" onkeyup="filterRecords()" placeholder="Search student...">
   </div>
 
   {% for student_name, attendance_records in grouped_report.items() %}
-    <h2>
-      {{ student_name }} - {{ attendance_percentages[student_name] }}%
-      <span class="calendar-icon" onclick="toggleCalendar('{{ student_name }}')">📅</span>
-    </h2>
-    <div id="calendar-container-{{ student_name }}" class="calendar-container">
-      <div id="calendar-{{ student_name }}"></div>
+    <div class="student-record">
+      <h2>
+        {{ student_name }} - {{ attendance_percentages[student_name] }}%
+        <span class="calendar-icon" onclick="toggleCalendar('{{ student_name }}')">📅</span>
+      </h2>
+      <div id="calendar-container-{{ student_name }}" class="calendar-container">
+        <div id="calendar-{{ student_name }}"></div>
+      </div>
+      <table class="attendance-table">
+        <thead>
+          <tr><th>Date</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          {% for date, status in attendance_records %}
+            <tr>
+              <td>{{ date }}</td>
+              <td class="{% if status == 'Present' %}present{% elif status == 'Absent' %}absent{% elif status == 'Sick Leave' %}sick{% endif %}">
+                {{ status }}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-    <table class="attendance-table">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for date, status in attendance_records %}
-          <tr>
-            <td>{{ date }}</td>
-            <td class="{% if status == 'Present' %}present{% elif status == 'Absent' %}absent{% endif %}">
-              {{ status }}
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
   {% endfor %}
 
   <div class="back-to-list-container">
@@ -144,28 +144,10 @@
   </div>
 
   <script>
-    function searchStudents() {
-      let input = document.getElementById("searchInput").value.toLowerCase();
-      let studentHeaders = document.querySelectorAll("h2");
-      let tables = document.querySelectorAll(".attendance-table");
-
-      studentHeaders.forEach((header, index) => {
-        let studentName = header.textContent.toLowerCase();
-        let isVisible = studentName.includes(input);
-
-        header.style.display = isVisible ? "block" : "none";
-        tables[index].style.display = isVisible ? "table" : "none";
-      });
-    }
-
     function toggleCalendar(studentName) {
       const container = document.getElementById(`calendar-container-${studentName}`);
-      if (container.style.display === 'none' || container.style.display === '') {
-        container.style.display = 'block';
-        openCalendar(studentName);
-      } else {
-        container.style.display = 'none';
-      }
+      container.style.display = container.style.display === 'block' ? 'none' : 'block';
+      openCalendar(studentName);
     }
 
     function openCalendar(studentName) {
@@ -175,29 +157,37 @@
 
       const absentDates = records.filter(([date, status]) => status === 'Absent').map(([date]) => date);
       const presentDates = records.filter(([date, status]) => status === 'Present').map(([date]) => date);
+      const sickDates = records.filter(([date, status]) => status === 'Sick Leave').map(([date]) => date);
 
       flatpickr(calendarEl, {
         inline: true,
-        enable: [...absentDates, ...presentDates], // Only mark attendance dates
-        disable: [function(date) {
-          return date.getDay() === 0; // Disable Sundays
-        }],
+        disable: [date => date.getDay() === 0],
         disableMobile: true,
         dateFormat: "Y-m-d",
         onDayCreate: function(dObj, dStr, fp, dayElem) {
           const dateStr = fp.formatDate(dayElem.dateObj, "Y-m-d");
-
-          // Darken all numbers
-          dayElem.style.color = 'black';
-
-          // Apply colors based on attendance status
+          dayElem.style.color = 'gray'; // Darken unmarked dates
           if (absentDates.includes(dateStr)) {
-            dayElem.style.backgroundColor = '#dc3545'; // Red for Absent
+            dayElem.style.backgroundColor = '#dc3545';
+            dayElem.style.color = 'white';
           } else if (presentDates.includes(dateStr)) {
-            dayElem.style.backgroundColor = '#28a745'; // Green for Present
+            dayElem.style.backgroundColor = '#28a745';
+            dayElem.style.color = 'white';
+          } else if (sickDates.includes(dateStr)) {
+            dayElem.style.backgroundColor = '#ffcc00';
+            dayElem.style.color = 'black';
           }
         }
       });
+    }
+
+    function filterRecords() {
+      let input = document.getElementById("searchInput").value.toUpperCase();
+      let records = document.getElementsByClassName("student-record");
+      for (let i = 0; i < records.length; i++) {
+        let name = records[i].getElementsByTagName("h2")[0].innerText.toUpperCase();
+        records[i].style.display = name.includes(input) ? "" : "none";
+      }
     }
   </script>
 </body>
