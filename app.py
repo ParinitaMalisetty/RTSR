@@ -124,9 +124,9 @@ def attendance_report():
             grouped_report[name] = []
         grouped_report[name].append((date, status))
 
-    # Calculate attendance percentage in traditional manner (starting from 100%)
+    # Calculate attendance percentage excluding sick leaves
     for student, records in grouped_report.items():
-        total_classes = len(records)
+        total_classes = sum(1 for _, status in records if status != 'Sick Leave')
         absent_count = sum(1 for _, status in records if status == 'Absent')
 
         if total_classes > 0:
