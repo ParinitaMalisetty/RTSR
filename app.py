@@ -95,38 +95,52 @@ def mark_attendance(student_id):
 
     return render_template('mark_attendance.html', student_id=student_id)
 
+# Route to view attendance report with percentage calculation
 @app.route('/attendance_report')
 def attendance_report():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    search_query = request.args.get('search', '').strip().lower()
-
     conn = sqlite3.connect('attendance.db')
     c = conn.cursor()
 
+    # Fetch attendance records, excluding Sundays
     c.execute("""
         SELECT students.name, attendance.date, attendance.status
         FROM attendance
         JOIN students ON attendance.student_id = students.id
-        WHERE strftime('%w', attendance.date) != '0'
+        WHERE strftime('%w', attendance.date) != '0'  -- Exclude Sundays
         ORDER BY students.name ASC, attendance.date DESC
     """)
     report = c.fetchall()
     conn.close()
 
+    # Organize attendance records per student
     grouped_report = {}
-    for row in report:
-        name, date, status = row
+    attendance_percentages = {}
+
+    for name, date, status in report:
         if name not in grouped_report:
             grouped_report[name] = []
         grouped_report[name].append((date, status))
 
-    if search_query:
-        grouped_report = {k: v for k, v in grouped_report.items() if search_query in k.lower()}
+    # Calculate attendance percentage in traditional manner (starting from 100%)
+    for student, records in grouped_report.items():
+        total_classes = len(records)
+        absent_count = sum(1 for _, status in records if status == 'Absent')
 
-    return render_template('attendance_report.html', grouped_report=grouped_report)
+        if total_classes > 0:
+            attendance_percentage = max(100 - ((absent_count / total_classes) * 100), 0)
+        else:
+            attendance_percentage = 100  # If no records, assume full attendance
 
+        attendance_percentages[student] = round(attendance_percentage, 2)  # Round to 2 decimal places
+
+    return render_template(
+        'attendance_report.html',
+        grouped_report=grouped_report,
+        attendance_percentages=attendance_percentages
+    )
 
 @app.route('/logout')
 def logout():
