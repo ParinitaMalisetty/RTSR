@@ -4,8 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Attendance Report</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <style>
-    /* General Styling */
     body {
       font-family: 'Arial', sans-serif;
       margin: 0;
@@ -18,79 +19,79 @@
       text-align: center;
       color: #3284f7;
       padding: 20px;
-      margin-bottom: 30px;
     }
+
     .upasthiti-title {
       position: absolute;
       top: 10px;
       left: 20px;
       font-family: 'Copperplate', 'Papyrus', fantasy;
-      font-style: bold;
       font-size: 2em;
       color: #3284f7;
+    }
+
+    .search-container {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+      width: 40%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
     }
 
     h2 {
       font-size: 1.2em;
       color: #192f86;
       margin-top: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding-left: 20px;
     }
 
-    /* Table Styling */
+    .calendar-icon {
+      cursor: pointer;
+      margin-left: 10px;
+      font-size: 1.2em;
+      color: #3284f7;
+    }
+
+    .calendar-container {
+      display: none;
+      padding: 10px;
+    }
+
     table {
       width: 100%;
-      margin: 0 auto 20px auto;
       border-collapse: collapse;
       background-color: white;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      margin: 10px 0;
     }
 
     th, td {
-      border: 1px solid #000000;
+      border: 1px solid #000;
       padding: 10px;
       text-align: center;
     }
 
     th {
       background-color: #d1e5f6;
-      color: rgb(0, 0, 0);
-      font-weight: bold;
+      color: black;
     }
 
-    tr:nth-child(even) {
-      background-color: #f9f9f9;
-    }
+    .present { background-color: #28a745; color: white; }
+    .absent { background-color: #dc3545; color: white; }
+    .sick { background-color: #ffcc00; color: black; }
 
-    tr:hover {
-      background-color: #f1f1f1;
-      cursor: pointer;
-    }
-
-    /* Background Colors for Status */
-    .present {
-      background-color: #28a745; /* Green for Present */
-      color: white;
-    }
-
-    .absent {
-      background-color: #dc3545; /* Red for Absent */
-      color: white;
-    }
-
-    /* Sorting Dropdown */
-    select {
-      padding: 10px;
-      border-radius: 5px;
-      font-size: 16px;
-    }
-
-    /* Back to Student List Link Container */
     .back-to-list-container {
       text-align: center;
       margin-top: 30px;
     }
 
-    /* Back to Student List Link Styling */
     a {
       text-decoration: none;
       background-color: #ba6418;
@@ -98,57 +99,96 @@
       padding: 12px 20px;
       border-radius: 5px;
       display: inline-block;
-      font-size: 16px;
-      text-align: center;
     }
 
-    a:hover {
-      background-color: #218838;
-    }
-
+    a:hover { background-color: #218838; }
   </style>
 </head>
 <body>
   <div class="upasthiti-title">UPASTHITI</div>
   <h1>Attendance Report</h1>
 
-  <!-- Sorting Dropdown -->
-  <form method="get" action="{{ url_for('attendance_report') }}">
-    <label for="sort_by">Sort by: </label>
-    <select name="sort_by" id="sort_by" onchange="this.form.submit()">
-      <option value="name_asc" {% if request.args.get('sort_by') == 'name_asc' %}selected{% endif %}>Name (A-Z)</option>
-      <option value="name_desc" {% if request.args.get('sort_by') == 'name_desc' %}selected{% endif %}>Name (Z-A)</option>
-      <option value="date_asc" {% if request.args.get('sort_by') == 'date_asc' %}selected{% endif %}>Date (Asc)</option>
-      <option value="date_desc" {% if request.args.get('sort_by') == 'date_desc' %}selected{% endif %}>Date (Desc)</option>
-      <option value="present" {% if request.args.get('sort_by') == 'present' %}selected{% endif %}>Present First</option>
-      <option value="absent" {% if request.args.get('sort_by') == 'absent' %}selected{% endif %}>Absent First</option>
-    </select>
-  </form>
+  <div class="search-container">
+    <input type="text" id="searchInput" onkeyup="filterRecords()" placeholder="Search student...">
+  </div>
 
   {% for student_name, attendance_records in grouped_report.items() %}
-    <h2>{{ student_name }}</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for date, status in attendance_records %}
-          <tr>
-            <td>{{ date }}</td>
-            <td class="{% if status == 'Present' %}present{% else %}absent{% endif %}">{{ status }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="student-record">
+      <h2>
+        {{ student_name }} - {{ attendance_percentages[student_name] }}%
+        <span class="calendar-icon" onclick="toggleCalendar('{{ student_name }}')">📅</span>
+      </h2>
+      <div id="calendar-container-{{ student_name }}" class="calendar-container">
+        <div id="calendar-{{ student_name }}"></div>
+      </div>
+      <table class="attendance-table">
+        <thead>
+          <tr><th>Date</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          {% for date, status in attendance_records %}
+            <tr>
+              <td>{{ date }}</td>
+              <td class="{% if status == 'Present' %}present{% elif status == 'Absent' %}absent{% elif status == 'Sick Leave' %}sick{% endif %}">
+                {{ status }}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   {% endfor %}
 
-  <!-- Back to Student List Link -->
   <div class="back-to-list-container">
     <a href="{{ url_for('index') }}">Back to Student List</a>
   </div>
 
+  <script>
+    function toggleCalendar(studentName) {
+      const container = document.getElementById(`calendar-container-${studentName}`);
+      container.style.display = container.style.display === 'block' ? 'none' : 'block';
+      openCalendar(studentName);
+    }
+
+    function openCalendar(studentName) {
+      const calendarEl = document.getElementById(`calendar-${studentName}`);
+      const attendanceData = JSON.parse('{{ grouped_report | tojson | safe }}');
+      const records = attendanceData[studentName] || [];
+
+      const absentDates = records.filter(([date, status]) => status === 'Absent').map(([date]) => date);
+      const presentDates = records.filter(([date, status]) => status === 'Present').map(([date]) => date);
+      const sickDates = records.filter(([date, status]) => status === 'Sick Leave').map(([date]) => date);
+
+      flatpickr(calendarEl, {
+        inline: true,
+        disable: [date => date.getDay() === 0],
+        disableMobile: true,
+        dateFormat: "Y-m-d",
+        onDayCreate: function(dObj, dStr, fp, dayElem) {
+          const dateStr = fp.formatDate(dayElem.dateObj, "Y-m-d");
+          dayElem.style.color = 'gray'; // Darken unmarked dates
+          if (absentDates.includes(dateStr)) {
+            dayElem.style.backgroundColor = '#dc3545';
+            dayElem.style.color = 'white';
+          } else if (presentDates.includes(dateStr)) {
+            dayElem.style.backgroundColor = '#28a745';
+            dayElem.style.color = 'white';
+          } else if (sickDates.includes(dateStr)) {
+            dayElem.style.backgroundColor = '#ffcc00';
+            dayElem.style.color = 'black';
+          }
+        }
+      });
+    }
+
+    function filterRecords() {
+      let input = document.getElementById("searchInput").value.toUpperCase();
+      let records = document.getElementsByClassName("student-record");
+      for (let i = 0; i < records.length; i++) {
+        let name = records[i].getElementsByTagName("h2")[0].innerText.toUpperCase();
+        records[i].style.display = name.includes(input) ? "" : "none";
+      }
+    }
+  </script>
 </body>
 </html>

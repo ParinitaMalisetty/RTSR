@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 import sqlite3
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Secret key for session management
@@ -20,21 +21,16 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS users (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT NOT NULL,
-                    password TEXT NOT NULL)''')  # Make sure this line exists
+                    password TEXT NOT NULL)''')  
     conn.commit()
     conn.close()
 
-# Route to display the login page
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
 
-        # Print out the values being checked
-        print(f"Attempting to log in with username: {username} and password: {password}")
-
-        # Check the credentials (for simplicity, let's assume the first user in the users table is admin)
         conn = sqlite3.connect('attendance.db')
         c = conn.cursor()
         c.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
@@ -42,14 +38,13 @@ def login():
         conn.close()
 
         if user:
-            session['user_id'] = user[0]  # Store user_id in the session
+            session['user_id'] = user[0]  
             return redirect(url_for('index'))
         else:
             return "Invalid credentials, please try again."
 
     return render_template('login.html')
 
-# Route to display all students
 @app.route('/')
 def index():
     if 'user_id' not in session:
@@ -62,7 +57,6 @@ def index():
     conn.close()
     return render_template('index.html', students=students)
 
-# Route to add a student (for admin)
 @app.route('/add_student', methods=['POST'])
 def add_student():
     if 'user_id' not in session:
@@ -76,76 +70,81 @@ def add_student():
     conn.close()
     return redirect(url_for('index'))
 
-# Route to mark attendance
 @app.route('/mark_attendance/<int:student_id>', methods=['GET', 'POST'])
 def mark_attendance(student_id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
     if request.method == 'POST':
-        status = request.form['status']
         date = request.form['date']
+        status = request.form['status']
+
+        selected_date = datetime.strptime(date, "%Y-%m-%d")
+        if selected_date.weekday() == 6:  
+            return "Attendance cannot be marked on Sundays. Please select another date."
+
         conn = sqlite3.connect('attendance.db')
         c = conn.cursor()
-        c.execute("INSERT INTO attendance (student_id, date, status) VALUES (?, ?, ?)",
-                  (student_id, date, status))
+
+        c.execute("DELETE FROM attendance WHERE student_id = ? AND date = ?", (student_id, date))
+        c.execute("INSERT INTO attendance (student_id, date, status) VALUES (?, ?, ?)", (student_id, date, status))
+
         conn.commit()
         conn.close()
         return redirect(url_for('index'))
+
     return render_template('mark_attendance.html', student_id=student_id)
 
-# Route to view attendance report
+# Route to view attendance report with percentage calculation
 @app.route('/attendance_report')
 def attendance_report():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    sort_by = request.args.get('sort_by', 'name_asc')
-
     conn = sqlite3.connect('attendance.db')
     c = conn.cursor()
 
-    # Query to fetch attendance data
+    # Fetch attendance records, excluding Sundays
     c.execute("""
         SELECT students.name, attendance.date, attendance.status
         FROM attendance
         JOIN students ON attendance.student_id = students.id
+        WHERE strftime('%w', attendance.date) != '0'  -- Exclude Sundays
+        ORDER BY students.name ASC, attendance.date DESC
     """)
     report = c.fetchall()
     conn.close()
 
-    # Organize the data into a dictionary grouped by student name
+    # Organize attendance records per student
     grouped_report = {}
-    for row in report:
-        name, date, status = row
+    attendance_percentages = {}
+
+    for name, date, status in report:
         if name not in grouped_report:
             grouped_report[name] = []
         grouped_report[name].append((date, status))
 
-    # Sort the grouped report based on the selected sort_by parameter
-    if sort_by == 'name_asc':
-        grouped_report_sorted = {k: v for k, v in sorted(grouped_report.items())}
-    elif sort_by == 'name_desc':
-        grouped_report_sorted = {k: v for k, v in sorted(grouped_report.items(), reverse=True)}
-    elif sort_by == 'date_asc':
-        grouped_report_sorted = {k: sorted(v, key=lambda x: x[0]) for k, v in grouped_report.items()}
-    elif sort_by == 'date_desc':
-        grouped_report_sorted = {k: sorted(v, key=lambda x: x[0], reverse=True) for k, v in grouped_report.items()}
-    elif sort_by == 'present':
-        # Sorting by 'Present' first (Present = 1, Absent = 0)
-        grouped_report_sorted = {k: sorted(v, key=lambda x: (x[1] != 'Present', x[0])) for k, v in grouped_report.items()}
-    elif sort_by == 'absent':
-        # Sorting by 'Absent' first (Absent = 1, Present = 0)
-        grouped_report_sorted = {k: sorted(v, key=lambda x: (x[1] != 'Absent', x[0])) for k, v in grouped_report.items()}
-    else:
-        grouped_report_sorted = grouped_report  # Default sort
+    # Calculate attendance percentage excluding sick leaves
+    for student, records in grouped_report.items():
+        total_classes = sum(1 for _, status in records if status != 'Sick Leave')
+        absent_count = sum(1 for _, status in records if status == 'Absent')
 
-    return render_template('attendance_report.html', grouped_report=grouped_report_sorted)
+        if total_classes > 0:
+            attendance_percentage = max(100 - ((absent_count / total_classes) * 100), 0)
+        else:
+            attendance_percentage = 100  # If no records, assume full attendance
 
-# Route to log out
+        attendance_percentages[student] = round(attendance_percentage, 2)  # Round to 2 decimal places
+
+    return render_template(
+        'attendance_report.html',
+        grouped_report=grouped_report,
+        attendance_percentages=attendance_percentages
+    )
+
 @app.route('/logout')
 def logout():
-    session.pop('user_id', None)  # Remove user_id from session
+    session.pop('user_id', None)  
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
