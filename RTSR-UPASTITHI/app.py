@@ -26,7 +26,7 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS exam_marks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     student_id INTEGER,
-    exam_type TEXT CHECK(exam_type IN ('Mid 1', 'Mid 2', 'End Sem')),
+    exam_type TEXT CHECK(exam_type IN ('Mid 1', 'Mid 2', 'End Sem','Assignment 1','Assignment 2','Seminar')),
     subject TEXT,
     marks INTEGER,
     FOREIGN KEY(student_id) REFERENCES students(id)
@@ -57,7 +57,7 @@ def login():
             if role == 'student':
                 return redirect(url_for('student_dashboard'))
             else:
-                return redirect(url_for('index'))
+                return redirect(url_for('admin_home'))
         else:
             return "Invalid credentials or role. Please try again."
 
@@ -211,11 +211,9 @@ def student_exam_report():
     conn = sqlite3.connect('attendance.db')
     c = conn.cursor()
 
-    # Get student ID
     c.execute("SELECT id FROM students WHERE name = ?", (username,))
     student_id = c.fetchone()[0]
 
-    # Get marks
     c.execute("""
         SELECT exam_type, subject, marks
         FROM exam_marks
@@ -224,24 +222,42 @@ def student_exam_report():
     records = c.fetchall()
     conn.close()
 
-    # Organize by subject
     from collections import defaultdict
     subject_scores = defaultdict(dict)
     for exam_type, subject, marks in records:
         subject_scores[subject][exam_type] = marks
 
-    # Calculate mid average
+    # Compute averages and total
     for subject in subject_scores:
-        mid1 = subject_scores[subject].get('Mid 1', 0)
-        mid2 = subject_scores[subject].get('Mid 2', 0)
-        avg = (mid1 + mid2) / 2 if 'Mid 1' in subject_scores[subject] or 'Mid 2' in subject_scores[subject] else None
-        subject_scores[subject]['Mid Avg'] = round(avg, 2) if avg is not None else 'N/A'
+        mid1 = subject_scores[subject].get("Mid 1")
+        mid2 = subject_scores[subject].get("Mid 2")
+        asgn1 = subject_scores[subject].get("Assignment 1")
+        asgn2 = subject_scores[subject].get("Assignment 2")
+        seminar = subject_scores[subject].get("Seminar", 0)
+
+        mid_avg = None
+        if mid1 is not None or mid2 is not None:
+            mid_avg = round(((mid1 or 0) + (mid2 or 0)) / 2, 2)
+        asgn_avg = None
+        if asgn1 is not None or asgn2 is not None:
+            asgn_avg = round(((asgn1 or 0) + (asgn2 or 0)) / 2, 2)
+
+        subject_scores[subject]['Mid Avg'] = mid_avg if mid_avg is not None else 'N/A'
+        subject_scores[subject]['Assign Avg'] = asgn_avg if asgn_avg is not None else 'N/A'
+        subject_scores[subject]['Total'] = (
+            round((mid_avg or 0) + (asgn_avg or 0) + (seminar or 0), 2)
+            if mid_avg is not None or asgn_avg is not None or seminar else 'N/A'
+        )
 
     return render_template('exam_report.html', username=username, subject_scores=subject_scores)
 
 @app.route('/')
-def index():
-    if 'user_id' not in session:
+def root_redirect():
+    return redirect(url_for('login'))
+
+@app.route('/admin_home')
+def admin_home():
+    if 'user_id' not in session or session.get('role') != 'admin':
         return redirect(url_for('login'))
 
     conn = sqlite3.connect('attendance.db')
@@ -250,6 +266,7 @@ def index():
     students = c.fetchall()
     conn.close()
     return render_template('index.html', students=students)
+
 
 
 @app.route('/mark_attendance/<int:student_id>', methods=['GET', 'POST'])
@@ -273,7 +290,7 @@ def mark_attendance(student_id):
 
         conn.commit()
         conn.close()
-        return redirect(url_for('index'))
+        return redirect(url_for('admin_home'))
 
     return render_template('mark_attendance.html', student_id=student_id)
 
