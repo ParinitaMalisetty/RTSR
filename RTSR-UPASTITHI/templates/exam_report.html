@@ -13,6 +13,11 @@ content %}
           <th class="py-3 px-4 text-center">Mid 1</th>
           <th class="py-3 px-4 text-center">Mid 2</th>
           <th class="py-3 px-4 text-center">Mid Avg</th>
+          <th class="py-3 px-4 text-center">Assignment 1</th>
+          <th class="py-3 px-4 text-center">Assignment 2</th>
+          <th class="py-3 px-4 text-center">Assign Avg</th>
+          <th class="py-3 px-4 text-center">Seminar</th>
+          <th class="py-3 px-4 text-center">Total</th>
           <th class="py-3 px-4 text-center">End Sem</th>
         </tr>
       </thead>
@@ -23,11 +28,18 @@ content %}
           <td class="py-3 px-4">{{ scores.get('Mid 1', 'N/A') }}</td>
           <td class="py-3 px-4">{{ scores.get('Mid 2', 'N/A') }}</td>
           <td class="py-3 px-4">{{ scores['Mid Avg'] }}</td>
+          <td class="py-3 px-4">{{ scores.get('Assignment 1', 'N/A') }}</td>
+          <td class="py-3 px-4">{{ scores.get('Assignment 2', 'N/A') }}</td>
+          <td class="py-3 px-4">{{ scores['Assign Avg'] }}</td>
+          <td class="py-3 px-4">{{ scores.get('Seminar', 'N/A') }}</td>
+          <td class="py-3 px-4">{{ scores['Total'] }}</td>
           <td class="py-3 px-4">{{ scores.get('End Sem', 'N/A') }}</td>
         </tr>
         {% endfor %}
       </tbody>
+      
     </table>
   </div>
 </div>
 {% endblock %}
+
