@@ -1,0 +1,48 @@
+{% extends "base.html" %} {% block title %} Attendance Report {% endblock %} {% block content %}
+<div class="relative bg-blue-50 h-fit pb-10 px-20 rounded-2xl">
+  <h1 class="text-center text-3xl font-semibold text-blue-600 py-10">
+    Attendance Report
+  </h1>
+
+  <div class="flex justify-center mb-6">
+    <form method="get" action="{{ url_for('attendance_report') }}" class="flex items-center gap-4">
+      <input type="text" name="search" placeholder="Search student..." value="{{ request.args.get('search', '') }}" class="px-4 py-2 border border-gray-300 rounded-md w-80" />
+      <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Search</button>
+    </form>
+  </div>
+
+  {% for student_name, attendance_records in grouped_report.items() %}
+    <div class="mb-12 student-record">
+      <h2 class="text-xl text-left text-blue-900 font-semibold pl-4">
+        {{ student_name }} - {{ attendance_percentages[student_name] }}%
+      </h2>
+      <div class="overflow-x-auto mt-2">
+        <table class="min-w-full bg-white border border-gray-300 mt-4">
+          <thead>
+            <tr class="bg-blue-100 text-blue-900">
+              <th class="px-4 py-2 border border-gray-300">Date</th>
+              <th class="px-4 py-2 border border-gray-300">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for date, status in attendance_records %}
+              <tr>
+                <td class="px-4 py-2 border border-gray-300">{{ date }}</td>
+                <td class="px-4 py-2 border border-gray-300 {% if status == 'Present' %}bg-green-500 text-white{% elif status == 'Absent' %}bg-red-500 text-white{% elif status == 'Sick Leave' %}bg-yellow-400 text-black{% endif %}">
+                  {{ status }}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endfor %}
+
+  <div class="text-center mt-10">
+    <a href="{{ url_for('index') }}" class="inline-block bg-blue-500 hover:bg-orange-600 text-white font-medium py-2 px-6 rounded-lg">
+      Back to Student List
+    </a>
+  </div>
+</div>
+{% endblock %}

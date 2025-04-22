@@ -1,0 +1,33 @@
+{% extends "base.html" %} {% block title %}Exam Report{% endblock %} {% block
+content %}
+<div class="mt-10">
+  <h1 class="text-3xl font-bold text-center text-blue-700 mb-8">
+    {{ username }}'s Exam Report
+  </h1>
+
+  <div class="overflow-x-auto max-w-6xl mx-auto">
+    <table class="min-w-full bg-white shadow-md rounded-xl overflow-hidden">
+      <thead class="bg-blue-600 text-white">
+        <tr>
+          <th class="py-3 px-4 text-center">Subject</th>
+          <th class="py-3 px-4 text-center">Mid 1</th>
+          <th class="py-3 px-4 text-center">Mid 2</th>
+          <th class="py-3 px-4 text-center">Mid Avg</th>
+          <th class="py-3 px-4 text-center">End Sem</th>
+        </tr>
+      </thead>
+      <tbody class="text-gray-700">
+        {% for subject, scores in subject_scores.items() %}
+        <tr class="border-b hover:bg-gray-100">
+          <td class="py-3 px-4">{{ subject }}</td>
+          <td class="py-3 px-4">{{ scores.get('Mid 1', 'N/A') }}</td>
+          <td class="py-3 px-4">{{ scores.get('Mid 2', 'N/A') }}</td>
+          <td class="py-3 px-4">{{ scores['Mid Avg'] }}</td>
+          <td class="py-3 px-4">{{ scores.get('End Sem', 'N/A') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

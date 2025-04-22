@@ -1,0 +1,54 @@
+{% extends "base.html" %} {% block title %}Student Dashboard{% endblock %} {%
+block content %}
+
+<!-- Banner -->
+<div
+  class="w-full h-56 rounded-xl bg-cover bg-center mt-6 shadow-md"
+  style="
+    background-image: url('{{ url_for('static', filename='logo.jpg') }}');
+  "
+></div>
+
+<!-- Card -->
+<div class="max-w-5xl mx-auto mt-10 bg-white rounded-2xl shadow-lg p-8">
+  <h1 class="text-3xl font-bold text-center text-blue-700">
+    Welcome, {{ username }}
+  </h1>
+  <h2 class="text-xl text-center text-gray-700 mt-4">Your Attendance</h2>
+  <p class="text-center mt-2 text-lg font-medium text-gray-800">
+    Attendance Percentage:
+    <span class="text-green-600 font-bold">{{ attendance_percentage }}%</span>
+  </p>
+
+  <!-- Attendance Table -->
+  <div class="overflow-x-auto mt-6">
+    <table
+      class="w-full text-center border border-gray-300 rounded-md overflow-hidden"
+    >
+      <thead class="bg-green-500 text-white">
+        <tr>
+          <th class="py-3 px-4 border border-gray-300">Date</th>
+          <th class="py-3 px-4 border border-gray-300">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for date, status in records %}
+        <tr class="hover:bg-gray-100">
+          <td class="py-2 px-4 border border-gray-300">{{ date }}</td>
+          <td class="py-2 px-4 border border-gray-300">{{ status }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="text-center mt-6">
+    <a
+      href="{{ url_for('student_exam_report') }}"
+      class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
+    >
+      View Detailed Exam Report
+    </a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends "base.html" %} {% block title %} Manage Exam Marks {% endblock %} {%
+block content %}
+<div
+  class="bg-gradient-to-r from-blue-100 to-indigo-200 min-h-screen flex items-center justify-center py-8 rounded-2xl"
+>
+  <div class="bg-white w-full max-w-lg p-8 rounded-xl shadow-lg">
+    <h2 class="text-3xl font-semibold text-center text-gray-800 mb-6">
+      Manage Exam Marks
+    </h2>
+
+    {% if message %}
+    <p class="text-center text-green-600 mb-4 text-lg">{{ message }}</p>
+    {% endif %}
+
+    <form method="POST" class="space-y-6">
+      <!-- Student Selection -->
+      <div>
+        <label for="student_id" class="block text-lg font-medium text-gray-700"
+          >Student:</label
+        >
+        <select
+          name="student_id"
+          id="student_id"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          required
+        >
+          {% for id, name in students %}
+          <option value="{{ id }}">{{ name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Exam Type Selection -->
+      <div>
+        <label for="exam_type" class="block text-lg font-medium text-gray-700"
+          >Exam Type:</label
+        >
+        <select
+          name="exam_type"
+          id="exam_type"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          required
+        >
+          <option value="Mid 1">Mid 1</option>
+          <option value="Mid 2">Mid 2</option>
+          <option value="End Sem">End Sem</option>
+        </select>
+      </div>
+
+      <!-- Subject Input -->
+      <div>
+        <label for="subject" class="block text-lg font-medium text-gray-700"
+          >Subject:</label
+        >
+        <input
+          type="text"
+          name="subject"
+          id="subject"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          required
+          placeholder="e.g. Mathematics"
+        />
+      </div>
+
+      <!-- Marks Input -->
+      <div>
+        <label for="marks" class="block text-lg font-medium text-gray-700"
+          >Marks:</label
+        >
+        <input
+          type="number"
+          name="marks"
+          id="marks"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          required
+          placeholder="e.g. 85"
+        />
+      </div>
+
+      <!-- Submit Button -->
+      <div>
+        <button
+          type="submit"
+          class="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition ease-in-out duration-200"
+        >
+          Submit
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

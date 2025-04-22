@@ -1,0 +1,38 @@
+
+<body>
+<!-- Students List -->
+<ul class="space-y-4">
+    {% for student in students %}
+    <li
+      class="bg-white shadow-md rounded-xl px-6 py-4 flex justify-between items-center hover:shadow-lg transition"
+    >
+      <span class="font-medium text-lg">{{ student[1] }}</span>
+      <a
+        href="{{ url_for('mark_attendance', student_id=student[0]) }}"
+        class="bg-orange-400 hover:bg-orange-600 text-white px-4 py-2 rounded-md transition"
+      >
+        Mark Attendance
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  <!-- Action Buttons -->
+<div class="flex flex-col sm:flex-row justify-center items-center gap-4 mt-8">
+    <a
+      href="/student_register"
+      class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition"
+    >
+      ➕ Add New Student
+    </a>
+  
+    <a
+      href="{{ url_for('attendance_report') }}"
+      class="bg-cyan-500 hover:bg-cyan-600 text-white px-6 py-2 rounded-lg transition"
+    >
+      📊 View Attendance Report
+    </a>
+  </div>
+  
+  {% endblock %}
+  
+</body>

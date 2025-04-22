@@ -1,0 +1,102 @@
+{% extends "base.html" %} {% block title %}Mark Attendance{% endblock %} {%
+block content %}
+<div
+  class="flex flex-col items-center justify-start rounded-2xl bg-gradient-to-r from-blue-50 to-blue-100 py-8"
+>
+  <!-- Title -->
+  <h1 class="text-4xl font-extrabold text-blue-600 mb-8">UPASTHITI</h1>
+
+  <!-- Mark Attendance Heading -->
+  <h2 class="text-2xl font-semibold text-gray-800 mb-6">Mark Attendance</h2>
+
+  <!-- Attendance Form -->
+  <form
+    action="{{ url_for('mark_attendance', student_id=student_id) }}"
+    method="post"
+    class="bg-white p-8 rounded-lg shadow-lg w-full max-w-sm space-y-6"
+  >
+    <div>
+      <label for="date" class="block text-sm font-semibold text-gray-700"
+        >Date:</label
+      >
+      <input
+        type="date"
+        id="date"
+        name="date"
+        required
+        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+    </div>
+
+    <div>
+      <label for="status" class="block text-sm font-semibold text-gray-700"
+        >Status:</label
+      >
+      <select
+        id="status"
+        name="status"
+        required
+        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option value="Present">Present</option>
+        <option value="Absent">Absent</option>
+        <option value="Sick Leave">Sick Leave</option>
+        <!-- Added Sick Leave Option -->
+      </select>
+    </div>
+
+    <button
+      type="submit"
+      class="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition"
+    >
+      Submit
+    </button>
+  </form>
+
+  <a href="{{ url_for('index') }}" class="text-green-600 mt-4 hover:underline"
+    >Back to Student List</a
+  >
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const dateInput = document.getElementById("date");
+    const attendanceForm = document.querySelector("form");
+
+    // Disable Sundays
+    dateInput.addEventListener("change", function () {
+      let selectedDate = new Date(this.value);
+      if (selectedDate.getDay() === 0) {
+        // 0 represents Sunday
+        alert(
+          "Attendance cannot be marked on Sundays. Please select another date."
+        );
+        this.value = "";
+      }
+    });
+
+    // Fetch attendance record if already marked
+    async function checkAttendance() {
+      let selectedDate = dateInput.value;
+      if (!selectedDate) return;
+
+      let response = await fetch(
+        `/check_attendance?student_id={{ student_id }}&date=${selectedDate}`
+      );
+      let data = await response.json();
+
+      if (data.exists) {
+        if (
+          !confirm(
+            "Attendance is already marked for this date. Do you want to edit it?"
+          )
+        ) {
+          dateInput.value = "";
+        }
+      }
+    }
+
+    dateInput.addEventListener("change", checkAttendance);
+  });
+</script>
+{% endblock %}

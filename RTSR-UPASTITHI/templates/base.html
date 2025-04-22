@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Upasthiti{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" />
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-50 min-h-screen text-gray-800">
+    <!-- Navbar -->
+    <div
+      class="flex items-center justify-between px-10 shadow bg-white sticky top-0 z-10"
+    >
+      <!-- Logo -->
+      <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Upasthiti Logo" class="w-52">
+
+      <a
+        href="{{ url_for('logout') }}"
+        class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition"
+      >
+        Logout
+      </a>
+    </div>
+
+    <!-- Page Content -->
+    <div class="max-w-4xl mx-auto p-6 space-y-8">
+      {% block content %}{% endblock %}
+    </div>
+  </body>
+</html>
