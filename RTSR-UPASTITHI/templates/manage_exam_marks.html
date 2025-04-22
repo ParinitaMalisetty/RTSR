@@ -5,7 +5,7 @@ block content %}
 >
   <div class="bg-white w-full max-w-lg p-8 rounded-xl shadow-lg">
     <h2 class="text-3xl font-semibold text-center text-gray-800 mb-6">
-      Manage Exam Marks
+      Add Exam Marks
     </h2>
 
     {% if message %}
@@ -30,37 +30,39 @@ block content %}
         </select>
       </div>
 
-      <!-- Exam Type Selection -->
-      <div>
-        <label for="exam_type" class="block text-lg font-medium text-gray-700"
-          >Exam Type:</label
-        >
-        <select
-          name="exam_type"
-          id="exam_type"
-          class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
-        >
-          <option value="Mid 1">Mid 1</option>
-          <option value="Mid 2">Mid 2</option>
-          <option value="End Sem">End Sem</option>
-        </select>
-      </div>
+      <!-- Subject Dropdown -->
+<div>
+  <label for="subject" class="block text-lg font-medium text-gray-700">Subject:</label>
+  <select
+    name="subject"
+    id="subject"
+    class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+    required>
+    <option value="DAA">DAA</option>
+    <option value="CN">CN</option>
+    <option value="OS">OS</option>
+    <option value="FSD">FSD</option>
+    <option value="DMGT">DMGT</option>
+  </select>
+</div>
 
-      <!-- Subject Input -->
-      <div>
-        <label for="subject" class="block text-lg font-medium text-gray-700"
-          >Subject:</label
-        >
-        <input
-          type="text"
-          name="subject"
-          id="subject"
-          class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
-          placeholder="e.g. Mathematics"
-        />
-      </div>
+<!-- Updated Exam Types -->
+<div>
+  <label for="exam_type" class="block text-lg font-medium text-gray-700">Exam Type:</label>
+  <select
+    name="exam_type"
+    id="exam_type"
+    class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+    required>
+    <option value="Mid 1">Mid 1</option>
+    <option value="Mid 2">Mid 2</option>
+    <option value="Assignment 1">Assignment 1</option>
+    <option value="Assignment 2">Assignment 2</option>
+    <option value="Seminar">Seminar</option>
+    <option value="End Sem">End Sem</option>
+  </select>
+</div>
+
 
       <!-- Marks Input -->
       <div>
@@ -89,4 +91,12 @@ block content %}
     </form>
   </div>
 </div>
+<div class="text-center mt-10">
+  <a href="{{ url_for('admin_home') }}" class="inline-block bg-blue-500 hover:bg-orange-600 text-white font-medium py-2 px-6 rounded-lg">
+    Back to Student List
+  </a>
+</div>
+</div>
+
 {% endblock %}
+
