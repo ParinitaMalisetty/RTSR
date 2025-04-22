@@ -14,8 +14,6 @@ admin = ('admin', 'admin123', 'admin')
 c.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", admin)
 
 # === Add Employee Account ===
-employee = ('emp1', 'emp123', 'employee')
-c.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", employee)
 
 conn.commit()
 print("✅ Users added successfully.")
